@@ -1,69 +1,85 @@
-﻿PrinterAdapter printerAdapter = new PrinterAdapter();
-IElements<int> elementsObj = new Elements();
-printerAdapter.Print(elementsObj);
+﻿using System.Text;
 
-//third party library
-public class Printer
+var inputText = new InputText("text", "hello world");
+var labelText = new LabelText("body");
+var form = new Form("simpleForm");
+form.AddComponent(inputText);
+form.AddComponent(labelText);
+Console.WriteLine(form.ConvertToString()); 
+
+
+public class InputText : Element
 {
-    public void Print<T>(IContainer<T> container)
+    private readonly string _name;
+    private readonly string _value;
+
+    public InputText(string name, string value)
     {
-        foreach (var item in container.Items)
+        _name = name;
+        _value = value;
+    }
+
+    public override string ConvertToString()
+    {
+        return $"<inputText name='{_name}' value='{_value}'/>";
+    }
+}
+
+
+public class LabelText : Element
+{
+    private string _value;
+
+    public LabelText(string value)
+    {
+        _value = value;
+    }
+
+    public override string ConvertToString()
+    {
+        return $"<label value='{_value}'/>";
+    }
+}
+
+public class Form : Element
+{
+    private string _name;
+    private IList<Element> _elements;
+
+    public Form(string name)
+    {
+        _name = name;
+        _elements = new List<Element>();
+    }
+
+    public new void AddComponent(Element element)
+    {
+        _elements.Add(element);
+    }
+
+    public override string ConvertToString()
+    {
+        var result = new StringBuilder();
+        result.AppendLine($"<form name='{_name}'");
+        foreach(var e in _elements)
         {
-            Console.WriteLine(item.ToString());
+            result.AppendLine(e.ConvertToString());
         }
+        result.AppendLine("</form>");
+        return result.ToString();
     }
 }
 
-//CLASSES
-class Elements : IElements<int>
+public abstract class Element
 {
-    public IEnumerable<int> GetElements()
+    public virtual string ConvertToString()
     {
-        IEnumerable<int> elements = new List<int>() { 1, 2, 3, 4, 5, 6 };
-        return elements;
+        throw new NotImplementedException();
     }
-}
 
-public class PrinterAdapter : IPrinter<int>
-{
-    public void Print(IElements<int> elements)
+    public virtual void AddComponent(Element element)
     {
-        var container = new Container(elements);
-        Printer printer = new Printer();
-        printer.Print(container);
-    }
-}
-
-public class Container : IContainer<int>
-{
-    private IEnumerable<int> elements;
-    private int count;
-
-    public Container(IElements<int> Elements)
-    {
-        elements = Elements.GetElements();
-        count = elements.Count();
+        throw new NotImplementedException();
     }
 
-    public IEnumerable<int> Items => elements;
-
-    public int Count => count;
-}
-
-//INTERFACES
-public interface IContainer<T>
-{
-    IEnumerable<T> Items { get; }
-    int Count { get; }
-}
-
-//es im kodi mej goiutyun unecox interfacne
-public interface IElements<T>
-{
-    IEnumerable<T> GetElements();
-}
-
-public interface IPrinter<T>
-{
-    void Print(IElements<T> elements);
 }
